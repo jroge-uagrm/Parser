@@ -55,7 +55,7 @@ public class Parser {
         hayQueSumar=!hayQueSumar;
         elem();
         match(Token.CC);
-        hayQueSumar = !hayQueSumar;
+        hayQueSumar=!hayQueSumar;
         masLista();
     }
 
@@ -63,9 +63,8 @@ public class Parser {
         int p = analex.Preanalisis().getNom();
         if (p == Token.COMA) {
             match(Token.COMA);
-            hayQueSumar = !hayQueSumar;
             otroElem();
-        }
+       }
     }
 
     private void elem() throws Exception {
@@ -80,7 +79,6 @@ public class Parser {
     private void otroElem() throws Exception {
         int p = analex.Preanalisis().getNom();
         if (p == Token.CA) {
-            hayQueSumar = !hayQueSumar;
             Lista();
         } else {
             expr();
