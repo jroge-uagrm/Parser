@@ -7,7 +7,7 @@ public class Parser {
 
     private int error;          //Si error=0, la expresión es correcta
     private int suma;
-    private boolean hayQueSumar;
+    private boolean hayQueSumarListas,hayQueSumarElementos;
 
     public Parser() {
         cinta = new Cinta();
@@ -29,8 +29,10 @@ public class Parser {
             cinta.init(list);
             analex.init();
             error = suma = 0;          //No hay error aún
-            hayQueSumar = false;
+            hayQueSumarListas = false;
+            hayQueSumarElementos=true;
             Lista();     //Llamar al símbolo inicial.
+            match(Token.FIN);
             return suma;
         } catch (Exception e) {
             int error = Integer.parseInt(e.getMessage());
@@ -43,6 +45,10 @@ public class Parser {
                     setError(Error.FALTA_COMA);
                 case Token.NUM:
                     setError(Error.FALTA_NUM);
+                case Token.MAS:
+                    setError(Error.FALTA_SIGNO);
+                case Token.MENOS:
+                    setError(Error.FALTA_SIGNO);
                 default:
                     setError(Error.FATAL_ERROR);
             }
@@ -52,78 +58,65 @@ public class Parser {
 
     private void Lista() throws Exception {  //Lista ->... Símbolo inicial. Devuelve el resultado de la Lista.
         match(Token.CA);
-        hayQueSumar=!hayQueSumar;
+        hayQueSumarListas=!hayQueSumarListas;
         elem();
         match(Token.CC);
-        hayQueSumar=!hayQueSumar;
-        masLista();
-    }
-
-    private void masLista() throws Exception {
-        int p = analex.Preanalisis().getNom();
-        if (p == Token.COMA) {
-            match(Token.COMA);
-            otroElem();
-       }
+        hayQueSumarListas=!hayQueSumarListas;
     }
 
     private void elem() throws Exception {
         int p = analex.Preanalisis().getNom();
         if (p == Token.CA) {
             Lista();
-        } else if (p == Token.NUM) {
-            expr();
-        }
-    }
-
-    private void otroElem() throws Exception {
-        int p = analex.Preanalisis().getNom();
-        if (p == Token.CA) {
-            Lista();
         } else {
             expr();
+        }
+        separar();
+    }
+
+    private void separar() throws Exception {
+        int p = analex.Preanalisis().getNom();
+        if (p == Token.COMA) {
+            match(Token.COMA);
+            hayQueSumarElementos=true;
+            elem();
         }
     }
 
     private void expr() throws Exception {
         int num = analex.Preanalisis().getAtr();
-        if (hayQueSumar) {
-            suma += num;
+        if (hayQueSumarListas) {
+            if(hayQueSumarElementos){
+                suma += num;
+            }else{
+                suma -= num;
+            }
         } else {
-            suma -= num;
+            if(hayQueSumarElementos){
+                suma -= num;
+            }else{
+                suma += num;
+            }
         }
         match(Token.NUM);
-        expr1();
+        masExpr();
     }
 
-    private void expr1() throws Exception {
+    private void masExpr() throws Exception {
         int p = analex.Preanalisis().getNom();
         if (p == Token.MAS || p == Token.MENOS) {
             op();
-            match(Token.NUM);
-            expr1();
-        } else if (p == Token.COMA) {
-            match(Token.COMA);
-            otroElem();
+            expr();
         }
     }
 
     private void op() throws Exception {
         int p = analex.Preanalisis().getNom();
-        int num = analex.Preanalisis().getAtr();
         if (p == Token.MAS) {
-            if (hayQueSumar) {
-                suma += num;
-            } else {
-                suma -= num;
-            }
+            hayQueSumarElementos=true;
             match(Token.MAS);
         } else {
-            if (hayQueSumar) {
-                suma -= num;
-            } else {
-                suma += num;
-            }
+            hayQueSumarElementos=false;
             match(Token.MENOS);
         }
     }
