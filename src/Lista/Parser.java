@@ -68,10 +68,12 @@ public class Parser {
         int p = analex.Preanalisis().getNom();
         if (p == Token.CA) {
             Lista();
-        } else {
+            separar();
+        } else if (p == Token.NUM)
+        {
             expr();
+            separar();
         }
-        separar();
     }
 
     private void separar() throws Exception {
